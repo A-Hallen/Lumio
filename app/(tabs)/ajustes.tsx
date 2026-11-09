@@ -1,0 +1,70 @@
+import { Linking, Pressable, ScrollView, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import * as Application from 'expo-application';
+import { useStore } from '../../src/data/store';
+import { APK_FALLBACK, REPO } from '../../src/config';
+import { SectionTitle } from '../../src/ui/parts';
+import { color, font } from '../../src/theme/tokens';
+
+export default function Ajustes() {
+  const { circuit, circuits, setCircuit, schedules, sync, refresh, appUpdate } = useStore();
+  const insets = useSafeAreaInsets();
+  const status = { idle: 'Sin comprobar', syncing: 'Buscando actualizaciones…', offline: 'Sin conexión', ok: 'Al día' }[sync];
+
+  return (
+    <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingTop: insets.top + 8, paddingBottom: 32, paddingHorizontal: 20 }}>
+      <Text style={{ fontFamily: font.display, fontSize: 28, letterSpacing: 2, color: color.cal }}>AJUSTES</Text>
+
+      <SectionTitle>Mi circuito</SectionTitle>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 8 }}>
+        {circuits.map((c) => (
+          <Pressable
+            key={c}
+            onPress={() => setCircuit(c)}
+            accessibilityRole="radio"
+            accessibilityState={{ selected: c === circuit }}
+            style={{
+              minHeight: 48,
+              minWidth: 64,
+              paddingHorizontal: 16,
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: 8,
+              backgroundColor: c === circuit ? color.glassOn : 'transparent',
+              borderWidth: 1.5,
+              borderColor: c === circuit ? color.glassOn : color.smoke,
+            }}
+          >
+            <Text style={{ fontWeight: '800', fontSize: 17, color: c === circuit ? color.lead : color.cal }}>{c}</Text>
+          </Pressable>
+        ))}
+      </View>
+
+      <SectionTitle>Horarios</SectionTitle>
+      <Text style={{ color: color.cal, fontSize: 16, marginTop: 6 }}>Meses cargados: {schedules.map((s) => s.month).join(', ')}</Text>
+      <Text style={{ color: color.smoke, fontSize: 15, marginTop: 4 }}>Estado: {status}</Text>
+      <Pressable
+        onPress={refresh}
+        accessibilityRole="button"
+        style={{ marginTop: 12, minHeight: 48, borderRadius: 8, borderWidth: 1.5, borderColor: color.cal, alignItems: 'center', justifyContent: 'center' }}
+      >
+        <Text style={{ color: color.cal, fontWeight: '700' }}>Buscar actualización de horarios</Text>
+      </Pressable>
+      <Text style={{ color: color.smoke, fontSize: 13, marginTop: 8 }}>
+        Los horarios se guardan en el teléfono y todo funciona sin internet. Se actualizan solos cuando hay conexión, sin gastar casi datos.
+      </Text>
+
+      <SectionTitle>La app</SectionTitle>
+      <Text style={{ color: color.cal, fontSize: 16, marginTop: 6 }}>Versión {Application.nativeApplicationVersion ?? '—'}</Text>
+      {appUpdate && (
+        <Pressable onPress={() => Linking.openURL(appUpdate.apk)} style={{ marginTop: 10, minHeight: 48, borderRadius: 8, backgroundColor: color.ruby, alignItems: 'center', justifyContent: 'center' }}>
+          <Text style={{ color: color.cal, fontWeight: '800' }}>Descargar versión {appUpdate.version}</Text>
+        </Pressable>
+      )}
+      <Pressable onPress={() => Linking.openURL(APK_FALLBACK)} style={{ marginTop: 10, minHeight: 48, justifyContent: 'center' }}>
+        <Text style={{ color: color.offText, textDecorationLine: 'underline' }}>Descargar la última versión</Text>
+      </Pressable>
+      <Text style={{ color: color.smoke, fontSize: 13, marginTop: 4 }}>github.com/{REPO}</Text>
+    </ScrollView>
+  );
+}

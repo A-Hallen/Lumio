@@ -1,0 +1,15 @@
+node_modules/
+.expo/
+dist/
+web-build/
+android/
+ios/
+*.jks
+*.keystore
+.env*
+npm-debug.*
+# trabajo de diseno local de Impeccable (PRODUCT.md y .impeccable/surfaces si se versionan)
+.impeccable/mocks/
+.impeccable/questions/
+.impeccable/decision-payload.json
+.impeccable/live/

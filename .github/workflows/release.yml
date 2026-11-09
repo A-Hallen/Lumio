@@ -1,0 +1,92 @@
+name: Release APK
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: android-actions/setup-android@v3
+
+      - run: npm ci
+
+      - name: Pruebas y tipos
+        run: |
+          npm test
+          npm run typecheck
+
+      - name: La version del tag debe coincidir con package.json
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          v="v$(node -p "require('./package.json').version")"
+          test "$v" = "$GITHUB_REF_NAME" || { echo "El tag $GITHUB_REF_NAME no coincide con package.json ($v)"; exit 1; }
+
+      - name: Generar proyecto Android
+        run: npx expo prebuild --platform android --no-install --clean
+        env:
+          CI: '1'
+
+      - name: Preparar clave de firma
+        env:
+          LUMIO_KEYSTORE_B64: ${{ secrets.LUMIO_KEYSTORE_B64 }}
+        run: |
+          if [ -z "$LUMIO_KEYSTORE_B64" ]; then echo "::error::Falta el secreto LUMIO_KEYSTORE_B64"; exit 1; fi
+          echo "$LUMIO_KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/lumio.jks"
+
+      - name: Compilar APK (arm64 + armeabi-v7a)
+        working-directory: android
+        env:
+          LUMIO_KEYSTORE: ${{ runner.temp }}/lumio.jks
+          LUMIO_KEYSTORE_PASSWORD: ${{ secrets.LUMIO_KEYSTORE_PASSWORD }}
+          LUMIO_KEY_ALIAS: ${{ secrets.LUMIO_KEY_ALIAS }}
+          LUMIO_KEY_PASSWORD: ${{ secrets.LUMIO_KEY_PASSWORD }}
+        run: ./gradlew assembleRelease -PreactNativeArchitectures=armeabi-v7a,arm64-v8a --no-daemon
+
+      - name: Nombrar el APK
+        run: |
+          cp android/app/build/outputs/apk/release/app-release.apk lumio.apk
+          sha256sum lumio.apk | tee lumio.apk.sha256
+          ls -lh lumio.apk
+
+      - uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/v')
+        with:
+          files: |
+            lumio.apk
+            lumio.apk.sha256
+          generate_release_notes: true
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
+        with:
+          name: lumio-apk
+          path: lumio.apk
+
+      - name: Publicar la version nueva en schedule/index.json (la app la lee para avisar)
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          git fetch origin main
+          git checkout -B main origin/main
+          node scripts/schedule.mjs build --version "${GITHUB_REF_NAME#v}" --apk "https://github.com/${GITHUB_REPOSITORY}/releases/latest/download/lumio.apk"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add schedule/index.json src/data/bundled.ts
+          git diff --cached --quiet || { git commit -m "Publicar ${GITHUB_REF_NAME} en index.json [skip ci]"; git push origin main; }

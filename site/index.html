@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lumio · ¿Hay luz en casa?</title>
+<meta name="description" content="Lumio muestra si hay luz en tu circuito y cuánto falta para el próximo cambio. Funciona sin internet. Para Android.">
+<meta name="theme-color" content="#12100E">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="apple-touch-icon" href="icon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;800&display=swap" rel="stylesheet">
+<style>
+:root{--lead:#12100E;--wall:#1C1916;--wall2:#26221E;--line:#0A0908;--cal:#F1EBDD;--smoke:#A39B8C;--on:#E9A23B;--off:#8FA6FF;--ruby:#C63A33}
+*{box-sizing:border-box;margin:0;padding:0}
+html{background:var(--lead);color:var(--cal);font:17px/1.55 Roboto,system-ui,-apple-system,"Segoe UI",sans-serif}
+body{max-width:560px;margin:0 auto;padding:28px 22px 56px}
+.brand,h1,h2{font-family:"Barlow Condensed","Arial Narrow",sans-serif-condensed,sans-serif;text-transform:uppercase}
+.brand{font-weight:800;font-size:28px;letter-spacing:.12em}
+.fan{margin:20px -6px 0}
+.fan svg{width:100%;height:auto;display:block}
+h1{font-weight:800;font-size:clamp(52px,17vw,84px);line-height:.95;color:var(--on);margin-top:6px}
+.lead{font-size:19px;margin-top:10px}
+.btn{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:26px;min-height:60px;padding:0 24px;border-radius:10px;background:var(--on);color:var(--lead);font-weight:800;font-size:20px;text-decoration:none;letter-spacing:.01em}
+.btn:focus-visible,a:focus-visible{outline:3px solid var(--cal);outline-offset:3px}
+.btn:active{transform:translateY(1px)}
+.meta{color:var(--smoke);font-size:14px;margin-top:10px;min-height:1.5em;text-align:center}
+h2{font-weight:600;font-size:15px;letter-spacing:.16em;color:var(--smoke);margin:40px 0 4px}
+ol{list-style:none;counter-reset:s}
+li{counter-increment:s;display:flex;gap:14px;padding:14px 0;border-bottom:3px solid var(--line)}
+li::before{content:counter(s);flex:none;width:30px;height:30px;border-radius:50%;background:var(--wall2);display:grid;place-items:center;font-weight:800;font-size:14px;color:var(--on)}
+.note{margin-top:30px;padding:14px 16px;background:var(--wall);border-left:5px solid var(--ruby);border-radius:6px;font-size:15px;color:var(--cal)}
+footer{margin-top:36px;color:var(--smoke);font-size:14px}
+footer a{color:var(--off)}
+@media (prefers-reduced-motion:no-preference){.fan{animation:rise .7s ease-out both}@keyframes rise{from{opacity:0;transform:translateY(8px)}}}
+</style>
+</head>
+<body>
+<div class="brand">Lumio</div>
+<div class="fan"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 286" role="img" aria-label="Abanico de ocho cristales de vitral: los dorados son tramos con luz"><path d="M 8.0 276.0 A 272 272 0 0 1 28.7 171.9 L 41.6 177.3 A 258 258 0 0 0 22.0 276.0 Z" fill="#2347B5" stroke="#0A0908" stroke-width="2"/><path d="M 28.7 171.9 A 272 272 0 0 1 87.7 83.7 L 97.6 93.6 A 258 258 0 0 0 41.6 177.3 Z" fill="#C63A33" stroke="#0A0908" stroke-width="2"/><path d="M 87.7 83.7 A 272 272 0 0 1 175.9 24.7 L 181.3 37.6 A 258 258 0 0 0 97.6 93.6 Z" fill="#1D7C5C" stroke="#0A0908" stroke-width="2"/><path d="M 175.9 24.7 A 272 272 0 0 1 280.0 4.0 L 280.0 18.0 A 258 258 0 0 0 181.3 37.6 Z" fill="#2AA5A0" stroke="#0A0908" stroke-width="2"/><path d="M 280.0 4.0 A 272 272 0 0 1 384.1 24.7 L 378.7 37.6 A 258 258 0 0 0 280.0 18.0 Z" fill="#2347B5" stroke="#0A0908" stroke-width="2"/><path d="M 384.1 24.7 A 272 272 0 0 1 472.3 83.7 L 462.4 93.6 A 258 258 0 0 0 378.7 37.6 Z" fill="#C63A33" stroke="#0A0908" stroke-width="2"/><path d="M 472.3 83.7 A 272 272 0 0 1 531.3 171.9 L 518.4 177.3 A 258 258 0 0 0 462.4 93.6 Z" fill="#1D7C5C" stroke="#0A0908" stroke-width="2"/><path d="M 531.3 171.9 A 272 272 0 0 1 552.0 276.0 L 538.0 276.0 A 258 258 0 0 0 518.4 177.3 Z" fill="#2AA5A0" stroke="#0A0908" stroke-width="2"/><path d="M 26.00 276.00 A 254 254 0 0 1 45.33 178.80 L 190.83 239.06 A 96.52 96.52 0 0 0 183.48 276.00 Z" fill="#232A3A" stroke="#0A0908" stroke-width="5" stroke-linejoin="round"/><path d="M 26.00 276.00 A 254 254 0 0 1 45.33 178.80 L 190.83 239.06 A 96.52 96.52 0 0 0 183.48 276.00 Z" fill="none" stroke="#3D5BB8" stroke-width="1.5" stroke-dasharray="3 5" opacity=".8"/><path d="M 45.33 178.80 A 254 254 0 0 1 100.39 96.39 L 211.75 207.75 A 96.52 96.52 0 0 0 190.83 239.06 Z" fill="#E9A23B" stroke="#0A0908" stroke-width="5" stroke-linejoin="round"/><path d="M 100.39 96.39 A 254 254 0 0 1 182.80 41.33 L 243.06 186.83 A 96.52 96.52 0 0 0 211.75 207.75 Z" fill="#232A3A" stroke="#0A0908" stroke-width="5" stroke-linejoin="round"/><path d="M 100.39 96.39 A 254 254 0 0 1 182.80 41.33 L 243.06 186.83 A 96.52 96.52 0 0 0 211.75 207.75 Z" fill="none" stroke="#3D5BB8" stroke-width="1.5" stroke-dasharray="3 5" opacity=".8"/><path d="M 182.80 41.33 A 254 254 0 0 1 280.00 22.00 L 280.00 179.48 A 96.52 96.52 0 0 0 243.06 186.83 Z" fill="#232A3A" stroke="#0A0908" stroke-width="5" stroke-linejoin="round"/><path d="M 182.80 41.33 A 254 254 0 0 1 280.00 22.00 L 280.00 179.48 A 96.52 96.52 0 0 0 243.06 186.83 Z" fill="none" stroke="#3D5BB8" stroke-width="1.5" stroke-dasharray="3 5" opacity=".8"/><path d="M 280.00 22.00 A 254 254 0 0 1 377.20 41.33 L 316.94 186.83 A 96.52 96.52 0 0 0 280.00 179.48 Z" fill="#232A3A" stroke="#0A0908" stroke-width="5" stroke-linejoin="round"/><path d="M 280.00 22.00 A 254 254 0 0 1 377.20 41.33 L 316.94 186.83 A 96.52 96.52 0 0 0 280.00 179.48 Z" fill="none" stroke="#3D5BB8" stroke-width="1.5" stroke-dasharray="3 5" opacity=".8"/><path d="M 377.20 41.33 A 254 254 0 0 1 459.61 96.39 L 348.25 207.75 A 96.52 96.52 0 0 0 316.94 186.83 Z" fill="#232A3A" stroke="#0A0908" stroke-width="5" stroke-linejoin="round"/><path d="M 377.20 41.33 A 254 254 0 0 1 459.61 96.39 L 348.25 207.75 A 96.52 96.52 0 0 0 316.94 186.83 Z" fill="none" stroke="#3D5BB8" stroke-width="1.5" stroke-dasharray="3 5" opacity=".8"/><path d="M 459.61 96.39 A 254 254 0 0 1 514.67 178.80 L 369.17 239.06 A 96.52 96.52 0 0 0 348.25 207.75 Z" fill="#E9A23B" stroke="#0A0908" stroke-width="5" stroke-linejoin="round"/><path d="M 514.67 178.80 A 254 254 0 0 1 534.00 276.00 L 376.52 276.00 A 96.52 96.52 0 0 0 369.17 239.06 Z" fill="#232A3A" stroke="#0A0908" stroke-width="5" stroke-linejoin="round"/><path d="M 514.67 178.80 A 254 254 0 0 1 534.00 276.00 L 376.52 276.00 A 96.52 96.52 0 0 0 369.17 239.06 Z" fill="none" stroke="#3D5BB8" stroke-width="1.5" stroke-dasharray="3 5" opacity=".8"/><path d="M 183.48000000000002 276 A 96.52 96.52 0 0 1 376.52 276 Z" fill="#12100E" stroke="#0A0908" stroke-width="5"/><line x1="200.45534027420308" y1="221.3304700120151" x2="65.72719095827597" y2="128.73437839954337" stroke="#0A0908" stroke-width="10" stroke-linecap="round"/><line x1="200.45534027420308" y1="221.3304700120151" x2="65.72719095827597" y2="128.73437839954337" stroke="#F1EBDD" stroke-width="4" stroke-linecap="round"/></svg></div>
+<h1>¿Hay luz<br>en casa?</h1>
+<p class="lead">Elige tu circuito y mira al instante si hay luz, hasta cuándo, y cuánto falta. Sin cuentas, sin anuncios y <strong>sin necesidad de internet</strong>.</p>
+
+<a class="btn" id="dl" href="https://github.com/A-Hallen/Lumio/releases/latest/download/lumio.apk" download>Descargar para Android</a>
+<p class="meta" id="meta">Última versión</p>
+
+<h2>Cómo instalarla</h2>
+<ol>
+  <li><span>Toca <strong>Descargar</strong> y abre el archivo <strong>lumio.apk</strong> cuando termine.</span></li>
+  <li><span>Si Android lo pide, activa <strong>Permitir de esta fuente</strong> (instalar apps desconocidas) para tu navegador.</span></li>
+  <li><span>Abre Lumio, elige tu circuito y, si quieres, añade el widget a la pantalla de inicio.</span></li>
+</ol>
+
+<p class="note"><strong>Se actualiza sola.</strong> Cuando tengas internet, Lumio baja los horarios nuevos y te avisa si hay una versión nueva de la app.</p>
+
+<footer>Hecha para quien vive los apagones en Cuba. Código abierto en <a href="https://github.com/A-Hallen/Lumio">GitHub</a>.</footer>
+
+<script>
+// Muestra la versión y el tamaño del último release; si no hay conexión con GitHub, el botón sigue funcionando.
+fetch('https://api.github.com/repos/A-Hallen/Lumio/releases/latest').then(r => r.ok ? r.json() : Promise.reject()).then(r => {
+  const apk = (r.assets || []).find(a => a.name === 'lumio.apk');
+  const fecha = new Date(r.published_at).toLocaleDateString('es', { day: 'numeric', month: 'long', year: 'numeric' });
+  document.getElementById('meta').textContent = `Versión ${r.tag_name.replace(/^v/, '')} · ${fecha}` + (apk ? ` · ${(apk.size / 1048576).toFixed(0)} MB` : '');
+}).catch(() => {});
+</script>
+</body>
+</html>

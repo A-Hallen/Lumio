@@ -1,0 +1,8 @@
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: no-referrer
+/index.html
+  Cache-Control: public, max-age=300
+/schedule/*
+  Cache-Control: public, max-age=300
+  Access-Control-Allow-Origin: *
