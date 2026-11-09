@@ -6,7 +6,7 @@ Hecha con Expo / React Native. Diseño "Mediopunto": el día es un abanico de vi
 
 ## Instalar
 
-Descarga `lumio.apk` del [último release](https://github.com/A-Hallen/Lumio/releases/latest).
+Descarga `lumio.apk` del [último release](https://github.com/A-Hallen/Lumio/releases/latest). Si tu teléfono es muy antiguo (32 bits) y no se instala, usa `lumio-32bit.apk`.
 
 ## Desarrollo
 
@@ -37,7 +37,7 @@ La app prueba estos orígenes en orden y usa el primero que responda (`src/confi
 
 1. Sube la versión en `package.json` (de ahí salen la versión visible y el `versionCode`).
 2. `git tag v0.2.0 && git push --tags`.
-3. GitHub Actions compila el APK firmado (arm64 + armeabi-v7a), lo publica como `lumio.apk` y actualiza `schedule/index.json` para que las apps avisen de la versión nueva.
+3. GitHub Actions compila un APK firmado por arquitectura: `lumio.apk` (64 bits, ~33 MB, casi todos los teléfonos) y `lumio-32bit.apk` (teléfonos antiguos). Luego actualiza `schedule/index.json` para que las apps avisen de la versión nueva; la app elige sola el APK que le toca.
 
 Secretos del repositorio: `LUMIO_KEYSTORE_B64`, `LUMIO_KEYSTORE_PASSWORD`, `LUMIO_KEY_ALIAS`, `LUMIO_KEY_PASSWORD`. Opcionales para el sitio: `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`.
 

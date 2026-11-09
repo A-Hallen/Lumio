@@ -53,7 +53,7 @@ jobs:
           if [ -z "$LUMIO_KEYSTORE_B64" ]; then echo "::error::Falta el secreto LUMIO_KEYSTORE_B64"; exit 1; fi
           echo "$LUMIO_KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/lumio.jks"
 
-      - name: Compilar APK (arm64 + armeabi-v7a)
+      - name: Compilar APK (uno por arquitectura: arm64 y armeabi-v7a)
         working-directory: android
         env:
           LUMIO_KEYSTORE: ${{ runner.temp }}/lumio.jks
@@ -62,25 +62,32 @@ jobs:
           LUMIO_KEY_PASSWORD: ${{ secrets.LUMIO_KEY_PASSWORD }}
         run: ./gradlew assembleRelease -PreactNativeArchitectures=armeabi-v7a,arm64-v8a --no-daemon
 
-      - name: Nombrar el APK
+      # Un APK por arquitectura (ver plugins/with-abi-splits.js): lumio.apk es el de 64 bits, el de casi todos los telefonos.
+      - name: Nombrar los APK
         run: |
-          cp android/app/build/outputs/apk/release/app-release.apk lumio.apk
-          sha256sum lumio.apk | tee lumio.apk.sha256
-          ls -lh lumio.apk
+          out=android/app/build/outputs/apk/release
+          ls -l "$out"
+          cp "$out/app-arm64-v8a-release.apk" lumio.apk
+          cp "$out/app-armeabi-v7a-release.apk" lumio-32bit.apk
+          sha256sum lumio.apk lumio-32bit.apk | tee lumio.sha256
+          ls -lh lumio.apk lumio-32bit.apk
 
       - uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/v')
         with:
           files: |
             lumio.apk
-            lumio.apk.sha256
+            lumio-32bit.apk
+            lumio.sha256
           generate_release_notes: true
 
       - uses: actions/upload-artifact@v4
         if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
         with:
           name: lumio-apk
-          path: lumio.apk
+          path: |
+            lumio.apk
+            lumio-32bit.apk
 
       - name: Publicar la version nueva en schedule/index.json (la app la lee para avisar)
         if: startsWith(github.ref, 'refs/tags/v')

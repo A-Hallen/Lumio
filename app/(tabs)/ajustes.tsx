@@ -1,6 +1,8 @@
 import { Linking, Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Application from 'expo-application';
+import * as Device from 'expo-device';
+import { apkForArchitectures } from '../../src/core/apk';
 import { useReady } from '../../src/data/store';
 import { APK_FALLBACK, REPO } from '../../src/config';
 import { SectionTitle } from '../../src/ui/parts';
@@ -61,7 +63,7 @@ export default function Ajustes() {
           <Text style={{ color: color.cal, fontWeight: '800' }}>Descargar versión {appUpdate.version}</Text>
         </Pressable>
       )}
-      <Pressable onPress={() => Linking.openURL(APK_FALLBACK)} style={{ marginTop: 10, minHeight: 48, justifyContent: 'center' }}>
+      <Pressable onPress={() => Linking.openURL(apkForArchitectures(APK_FALLBACK, Device.supportedCpuArchitectures))} style={{ marginTop: 10, minHeight: 48, justifyContent: 'center' }}>
         <Text style={{ color: color.offText, textDecorationLine: 'underline' }}>Descargar la última versión</Text>
       </Pressable>
       <Text style={{ color: color.smoke, fontSize: 13, marginTop: 4 }}>github.com/{REPO}</Text>

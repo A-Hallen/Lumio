@@ -1,6 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { AppState } from 'react-native';
 import * as Application from 'expo-application';
+import * as Device from 'expo-device';
+import { apkForArchitectures } from '../core/apk';
 import { getStatus, type MonthSchedule, type Status } from '../core/schedule';
 import { syncAll, type AppUpdate } from '../core/sync';
 import { MIRRORS } from '../config';
@@ -51,7 +53,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         appVersion: Application.nativeApplicationVersion ?? '0.0.0',
       });
       if (r.downloaded.length) setSchedules(await loadSchedules());
-      if (r.appUpdate) setAppUpdate(r.appUpdate);
+      if (r.appUpdate) setAppUpdate({ ...r.appUpdate, apk: apkForArchitectures(r.appUpdate.apk, Device.supportedCpuArchitectures) });
       setSync(r.skipped || r.reachedMirror ? 'ok' : 'offline');
     } catch {
       setSync('offline');
