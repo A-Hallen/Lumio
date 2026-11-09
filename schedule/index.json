@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-09T03:08:23.210Z",
+ "generatedAt": "2026-11-09T03:43:31.689Z",
  "months": [
   {
    "month": "2026-11",
@@ -8,7 +8,7 @@
   }
  ],
  "app": {
-  "latest": "0.1.4",
+  "latest": "0.1.5",
   "apk": "https://github.com/A-Hallen/Lumio/releases/latest/download/lumio.apk"
  }
 }
