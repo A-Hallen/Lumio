@@ -1,6 +1,6 @@
 export const REPO = 'A-Hallen/Lumio';
 // Sitio de descarga en Cloudflare Pages; el nombre exacto se confirma al desplegar.
-export const SITE = 'https://lumio.pages.dev';
+export const SITE = 'https://lumio-ara.pages.dev';
 
 /** Orden de preferencia para bajar horarios y avisos de version; si uno falla se prueba el siguiente. */
 export const MIRRORS = [
