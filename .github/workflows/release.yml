@@ -53,7 +53,7 @@ jobs:
           if [ -z "$LUMIO_KEYSTORE_B64" ]; then echo "::error::Falta el secreto LUMIO_KEYSTORE_B64"; exit 1; fi
           echo "$LUMIO_KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/lumio.jks"
 
-      - name: Compilar APK (uno por arquitectura: arm64 y armeabi-v7a)
+      - name: Compilar un APK por arquitectura (arm64 y armeabi-v7a)
         working-directory: android
         env:
           LUMIO_KEYSTORE: ${{ runner.temp }}/lumio.jks
