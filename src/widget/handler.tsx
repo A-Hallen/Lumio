@@ -8,7 +8,8 @@ export async function widgetTaskHandler(props: WidgetTaskHandlerProps) {
     case 'WIDGET_ADDED':
     case 'WIDGET_UPDATE':
     case 'WIDGET_RESIZED': {
-      const [schedules, circuit] = await Promise.all([loadSchedules(), loadCircuit()]);
+      const schedules = await loadSchedules();
+      const circuit = await loadCircuit(schedules);
       props.renderWidget(<LumioWidget schedules={schedules} circuit={circuit} now={new Date()} />);
       break;
     }

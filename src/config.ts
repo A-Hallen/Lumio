@@ -9,5 +9,4 @@ export const MIRRORS = [
   `https://cdn.jsdelivr.net/gh/${REPO}@main/schedule`,
 ];
 
-export const DEFAULT_CIRCUIT = 1;
 export const APK_FALLBACK = `https://github.com/${REPO}/releases/latest/download/lumio.apk`;

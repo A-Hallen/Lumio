@@ -1,13 +1,13 @@
 import { ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { dayView, hourLabel } from '../../src/core/schedule';
-import { useStore } from '../../src/data/store';
+import { useReady } from '../../src/data/store';
 import { color, font } from '../../src/theme/tokens';
 
 const DAYS = ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'];
 
 export default function Semana() {
-  const { now, schedules, circuit } = useStore();
+  const { now, schedules, circuit } = useReady();
   const insets = useSafeAreaInsets();
   const days = Array.from({ length: 7 }, (_, i) => new Date(now.getFullYear(), now.getMonth(), now.getDate() + i));
 

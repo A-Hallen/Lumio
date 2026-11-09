@@ -3,13 +3,13 @@ import { Linking, Modal, Pressable, ScrollView, Text, View, useWindowDimensions 
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { dayView, formatDuration, hourLabel } from '../../src/core/schedule';
-import { useStore } from '../../src/data/store';
+import { useReady } from '../../src/data/store';
 import { Fan } from '../../src/ui/Fan';
 import { SectionTitle, SegmentList } from '../../src/ui/parts';
 import { color, font } from '../../src/theme/tokens';
 
 export default function Hoy() {
-  const { now, schedules, circuit, circuits, setCircuit, status, sync, appUpdate } = useStore();
+  const { now, schedules, circuit, circuits, setCircuit, status, sync, appUpdate } = useReady();
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const [picking, setPicking] = useState(false);

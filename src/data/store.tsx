@@ -4,8 +4,10 @@ import * as Application from 'expo-application';
 import { getStatus, type MonthSchedule, type Status } from '../core/schedule';
 import { syncAll, type AppUpdate } from '../core/sync';
 import { MIRRORS } from '../config';
-import { bundledUpdatedAt, kv, loadCircuit, loadSchedules, saveCircuit } from './load';
+import { bundledUpdatedAt, circuitsOf, kv, loadCircuit, loadSchedules, saveCircuit } from './load';
 import { bundled } from './bundled';
+
+const NO_STATUS: Status = { covered: false, hasLight: false, until: null, remainingMs: null, untilKnown: false };
 
 type Sync = 'idle' | 'syncing' | 'offline' | 'ok';
 
@@ -13,7 +15,8 @@ type Ctx = {
   ready: boolean;
   now: Date;
   schedules: MonthSchedule[];
-  circuit: number;
+  /** null hasta que la persona elige su circuito. */
+  circuit: number | null;
   circuits: number[];
   setCircuit: (c: number) => void;
   status: Status;
@@ -28,7 +31,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false);
   const [now, setNow] = useState(() => new Date());
   const [schedules, setSchedules] = useState<MonthSchedule[]>(bundled);
-  const [circuit, setCircuitState] = useState(1);
+  const [circuit, setCircuitState] = useState<number | null>(null);
   const [sync, setSync] = useState<Sync>('idle');
   const [appUpdate, setAppUpdate] = useState<AppUpdate | null>(null);
   const busy = useRef(false);
@@ -59,9 +62,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     (async () => {
-      const [all, c] = await Promise.all([loadSchedules(), loadCircuit()]);
+      const all = await loadSchedules();
       setSchedules(all);
-      setCircuitState(c);
+      setCircuitState(await loadCircuit(all));
       setReady(true);
       refresh(false);
     })();
@@ -87,11 +90,21 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     saveCircuit(c);
   }, []);
 
-  const circuits = useMemo(() => [...new Set(schedules.flatMap((s) => s.circuits))].sort((a, b) => a - b), [schedules]);
-  const status = useMemo(() => getStatus(schedules, circuit, now), [schedules, circuit, now]);
+  const circuits = useMemo(() => circuitsOf(schedules), [schedules]);
+  const status = useMemo(
+    () => (circuit === null ? NO_STATUS : getStatus(schedules, circuit, now)),
+    [schedules, circuit, now],
+  );
 
   const value: Ctx = { ready, now, schedules, circuit, circuits, setCircuit, status, sync, appUpdate, refresh: () => refresh(true) };
   return <StoreCtx.Provider value={value}>{children}</StoreCtx.Provider>;
+}
+
+/** Para las pantallas que solo existen despues de elegir circuito (lo garantiza CircuitGate). */
+export function useReady() {
+  const c = useStore();
+  if (c.circuit === null) throw new Error('useReady antes de elegir circuito');
+  return c as Ctx & { circuit: number };
 }
 
 export function useStore() {

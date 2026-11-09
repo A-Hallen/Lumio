@@ -5,7 +5,18 @@ import { fanSvg } from './fanSvg';
 
 const hhmm = (d: Date) => hourLabel(d.getHours() * 60 + d.getMinutes());
 
-export function LumioWidget({ schedules, circuit, now }: { schedules: MonthSchedule[]; circuit: number; now: Date }) {
+export function LumioWidget({ schedules, circuit, now }: { schedules: MonthSchedule[]; circuit: number | null; now: Date }) {
+  if (circuit === null) {
+    return (
+      <FlexWidget
+        clickAction="OPEN_APP"
+        style={{ height: 'match_parent', width: 'match_parent', flexDirection: 'column', justifyContent: 'center', backgroundColor: color.lead, borderRadius: 22, padding: 14 }}
+      >
+        <TextWidget text="LUMIO" style={{ fontFamily: 'sans-serif-condensed', fontWeight: '900', fontSize: 26, color: color.glassOn }} />
+        <TextWidget text="Abre la app y elige tu circuito" maxLines={2} style={{ fontSize: 14, color: color.cal }} />
+      </FlexWidget>
+    );
+  }
   const status = getStatus(schedules, circuit, now);
   const today = dayView(schedules, circuit, now);
   const nowMinute = now.getHours() * 60 + now.getMinutes();

@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { bundled } from './bundled';
 import { loadStoredSchedules, mergeSchedules, type KV } from '../core/sync';
-import { DEFAULT_CIRCUIT } from '../config';
+import { parseCircuit } from '../core/circuit';
 import type { MonthSchedule } from '../core/schedule';
 
 export const kv: KV = {
@@ -16,10 +16,12 @@ export async function loadSchedules(): Promise<MonthSchedule[]> {
 
 export const bundledUpdatedAt = Object.fromEntries(bundled.map((s) => [s.month, s.updatedAt ?? '']));
 
-export async function loadCircuit(): Promise<number> {
-  const raw = await kv.get('lumio.circuit');
-  const n = Number(raw);
-  return Number.isInteger(n) && n > 0 ? n : DEFAULT_CIRCUIT;
+export const circuitsOf = (schedules: MonthSchedule[]) =>
+  [...new Set(schedules.flatMap((s) => s.circuits))].sort((a, b) => a - b);
+
+/** Circuito elegido por la persona; null hasta que lo elija (no hay circuito por defecto). */
+export async function loadCircuit(schedules: MonthSchedule[]): Promise<number | null> {
+  return parseCircuit(await kv.get('lumio.circuit'), circuitsOf(schedules));
 }
 
 export const saveCircuit = (c: number) => kv.set('lumio.circuit', String(c));

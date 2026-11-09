@@ -24,7 +24,9 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - uses: android-actions/setup-android@v3
+      # El runner de GitHub ya trae el SDK de Android; solo hay que aceptar las licencias para que Gradle pueda bajar lo que falte.
+      - name: Aceptar licencias del SDK de Android
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
 
       - run: npm ci
 

@@ -1,13 +1,13 @@
 import { Linking, Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Application from 'expo-application';
-import { useStore } from '../../src/data/store';
+import { useReady } from '../../src/data/store';
 import { APK_FALLBACK, REPO } from '../../src/config';
 import { SectionTitle } from '../../src/ui/parts';
 import { color, font } from '../../src/theme/tokens';
 
 export default function Ajustes() {
-  const { circuit, circuits, setCircuit, schedules, sync, refresh, appUpdate } = useStore();
+  const { circuit, circuits, setCircuit, schedules, sync, refresh, appUpdate } = useReady();
   const insets = useSafeAreaInsets();
   const status = { idle: 'Sin comprobar', syncing: 'Buscando actualizaciones…', offline: 'Sin conexión', ok: 'Al día' }[sync];
 
