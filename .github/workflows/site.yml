@@ -38,4 +38,5 @@ jobs:
 
       - name: Aviso si falta Cloudflare
         if: env.CLOUDFLARE_API_TOKEN == ''
-        run: echo "::notice::Sin CLOUDFLARE_API_TOKEN: el sitio no se despliega desde Actions."
+        run: |
+          echo "::notice::Sin CLOUDFLARE_API_TOKEN el sitio no se despliega desde Actions."
