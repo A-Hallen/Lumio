@@ -6,7 +6,8 @@ import { apkForArchitectures } from '../core/apk';
 import { getStatus, type MonthSchedule, type Status } from '../core/schedule';
 import { syncAll, type AppUpdate } from '../core/sync';
 import { MIRRORS } from '../config';
-import { bundledUpdatedAt, circuitsOf, kv, loadCircuit, loadSchedules, saveCircuit } from './load';
+import { DEFAULT_TIME_FORMAT, type TimeFormat } from '../core/time';
+import { bundledUpdatedAt, circuitsOf, kv, loadCircuit, loadSchedules, loadTimeFormat, saveCircuit, saveTimeFormat } from './load';
 import { bundled } from './bundled';
 
 const NO_STATUS: Status = { covered: false, hasLight: false, until: null, remainingMs: null, untilKnown: false };
@@ -21,6 +22,8 @@ type Ctx = {
   circuit: number | null;
   circuits: number[];
   setCircuit: (c: number) => void;
+  timeFormat: TimeFormat;
+  setTimeFormat: (f: TimeFormat) => void;
   status: Status;
   sync: Sync;
   appUpdate: AppUpdate | null;
@@ -34,6 +37,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [now, setNow] = useState(() => new Date());
   const [schedules, setSchedules] = useState<MonthSchedule[]>(bundled);
   const [circuit, setCircuitState] = useState<number | null>(null);
+  const [timeFormat, setTimeFormatState] = useState<TimeFormat>(DEFAULT_TIME_FORMAT);
   const [sync, setSync] = useState<Sync>('idle');
   const [appUpdate, setAppUpdate] = useState<AppUpdate | null>(null);
   const busy = useRef(false);
@@ -67,6 +71,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       const all = await loadSchedules();
       setSchedules(all);
       setCircuitState(await loadCircuit(all));
+      setTimeFormatState(await loadTimeFormat());
       setReady(true);
       refresh(false);
     })();
@@ -92,13 +97,18 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     saveCircuit(c);
   }, []);
 
+  const setTimeFormat = useCallback((f: TimeFormat) => {
+    setTimeFormatState(f);
+    saveTimeFormat(f);
+  }, []);
+
   const circuits = useMemo(() => circuitsOf(schedules), [schedules]);
   const status = useMemo(
     () => (circuit === null ? NO_STATUS : getStatus(schedules, circuit, now)),
     [schedules, circuit, now],
   );
 
-  const value: Ctx = { ready, now, schedules, circuit, circuits, setCircuit, status, sync, appUpdate, refresh: () => refresh(true) };
+  const value: Ctx = { ready, now, schedules, circuit, circuits, setCircuit, timeFormat, setTimeFormat, status, sync, appUpdate, refresh: () => refresh(true) };
   return <StoreCtx.Provider value={value}>{children}</StoreCtx.Provider>;
 }
 

@@ -3,6 +3,7 @@ import { bundled } from './bundled';
 import { loadStoredSchedules, mergeSchedules, type KV } from '../core/sync';
 import { parseCircuit } from '../core/circuit';
 import type { MonthSchedule } from '../core/schedule';
+import { parseTimeFormat, type TimeFormat } from '../core/time';
 
 export const kv: KV = {
   get: (k) => AsyncStorage.getItem(k),
@@ -25,3 +26,10 @@ export async function loadCircuit(schedules: MonthSchedule[]): Promise<number | 
 }
 
 export const saveCircuit = (c: number) => kv.set('lumio.circuit', String(c));
+
+/** 12 h (am/pm) por defecto o 24 h. Lo lee tambien el widget. */
+export async function loadTimeFormat(): Promise<TimeFormat> {
+  return parseTimeFormat(await kv.get('lumio.timeformat'));
+}
+
+export const saveTimeFormat = (f: TimeFormat) => kv.set('lumio.timeformat', f);

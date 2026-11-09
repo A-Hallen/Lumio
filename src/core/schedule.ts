@@ -109,5 +109,5 @@ export function formatDuration(ms: number): string {
   return m === 0 ? `${h} h` : `${h} h ${m} min`;
 }
 
-export const hourLabel = (min: number) =>
-  `${String(Math.floor(min / 60) % 24).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`;
+/** Hora legible de un minuto del dia; 24 h por defecto, o 12 h con am/pm. */
+export { formatHour as hourLabel } from './time.ts';

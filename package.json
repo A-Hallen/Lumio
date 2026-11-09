@@ -1,6 +1,6 @@
 {
   "name": "lumio",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "main": "index.ts",
   "dependencies": {
     "@expo-google-fonts/barlow-condensed": "^0.4.1",

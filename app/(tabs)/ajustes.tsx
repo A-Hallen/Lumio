@@ -6,10 +6,18 @@ import { apkForArchitectures } from '../../src/core/apk';
 import { useReady } from '../../src/data/store';
 import { APK_FALLBACK, REPO } from '../../src/config';
 import { SectionTitle } from '../../src/ui/parts';
+import { UpdateNotice } from '../../src/ui/UpdateNotice';
+import { hourLabel } from '../../src/core/schedule';
+import type { TimeFormat } from '../../src/core/time';
 import { color, font } from '../../src/theme/tokens';
 
+const FORMATS: { value: TimeFormat; label: string }[] = [
+  { value: '12', label: '12 horas (am / pm)' },
+  { value: '24', label: '24 horas' },
+];
+
 export default function Ajustes() {
-  const { circuit, circuits, setCircuit, schedules, sync, refresh, appUpdate } = useReady();
+  const { circuit, circuits, setCircuit, timeFormat, setTimeFormat, schedules, sync, refresh, appUpdate } = useReady();
   const insets = useSafeAreaInsets();
   const status = { idle: 'Sin comprobar', syncing: 'Buscando actualizaciones…', offline: 'Sin conexión', ok: 'Al día' }[sync];
 
@@ -42,6 +50,30 @@ export default function Ajustes() {
         ))}
       </View>
 
+      <SectionTitle>Formato de hora</SectionTitle>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 8 }}>
+        {FORMATS.map((f) => (
+          <Pressable
+            key={f.value}
+            onPress={() => setTimeFormat(f.value)}
+            accessibilityRole="radio"
+            accessibilityState={{ selected: f.value === timeFormat }}
+            style={{
+              minHeight: 48,
+              paddingHorizontal: 16,
+              justifyContent: 'center',
+              borderRadius: 8,
+              backgroundColor: f.value === timeFormat ? color.glassOn : 'transparent',
+              borderWidth: 1.5,
+              borderColor: f.value === timeFormat ? color.glassOn : color.smoke,
+            }}
+          >
+            <Text style={{ fontWeight: '800', fontSize: 16, color: f.value === timeFormat ? color.lead : color.cal }}>{f.label}</Text>
+          </Pressable>
+        ))}
+      </View>
+      <Text style={{ color: color.smoke, fontSize: 13, marginTop: 8 }}>Ejemplo: {hourLabel(21 * 60, timeFormat)}</Text>
+
       <SectionTitle>Horarios</SectionTitle>
       <Text style={{ color: color.cal, fontSize: 16, marginTop: 6 }}>Meses cargados: {schedules.map((s) => s.month).join(', ')}</Text>
       <Text style={{ color: color.smoke, fontSize: 15, marginTop: 4 }}>Estado: {status}</Text>
@@ -59,9 +91,9 @@ export default function Ajustes() {
       <SectionTitle>La app</SectionTitle>
       <Text style={{ color: color.cal, fontSize: 16, marginTop: 6 }}>Versión {Application.nativeApplicationVersion ?? '—'}</Text>
       {appUpdate && (
-        <Pressable onPress={() => Linking.openURL(appUpdate.apk)} style={{ marginTop: 10, minHeight: 48, borderRadius: 8, backgroundColor: color.ruby, alignItems: 'center', justifyContent: 'center' }}>
-          <Text style={{ color: color.cal, fontWeight: '800' }}>Descargar versión {appUpdate.version}</Text>
-        </Pressable>
+        <View style={{ marginTop: 10 }}>
+          <UpdateNotice version={appUpdate.version} apk={appUpdate.apk} />
+        </View>
       )}
       <Pressable onPress={() => Linking.openURL(apkForArchitectures(APK_FALLBACK, Device.supportedCpuArchitectures))} style={{ marginTop: 10, minHeight: 48, justifyContent: 'center' }}>
         <Text style={{ color: color.offText, textDecorationLine: 'underline' }}>Descargar la última versión</Text>

@@ -1,5 +1,6 @@
 import { Text, View } from 'react-native';
 import { hourLabel, type Segment } from '../core/schedule';
+import type { TimeFormat } from '../core/time';
 import { color, font } from '../theme/tokens';
 
 /** Estado con relleno o filo + texto, nunca solo color. */
@@ -20,7 +21,7 @@ export function StatePill({ on }: { on: boolean }) {
   );
 }
 
-export function SegmentList({ segments }: { segments: Segment[] }) {
+export function SegmentList({ segments, timeFormat }: { segments: Segment[]; timeFormat: TimeFormat }) {
   return (
     <View>
       {segments.map((s) => (
@@ -29,7 +30,7 @@ export function SegmentList({ segments }: { segments: Segment[] }) {
           style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', minHeight: 52, borderBottomWidth: 3, borderBottomColor: color.line }}
         >
           <Text style={{ fontFamily: font.displayMedium, fontSize: 24, color: s.hasLight ? color.cal : color.smoke, letterSpacing: 0.5 }}>
-            {hourLabel(s.startMin)} – {hourLabel(s.endMin)}
+            {hourLabel(s.startMin, timeFormat)} – {hourLabel(s.endMin, timeFormat)}
           </Text>
           <StatePill on={s.hasLight} />
         </View>

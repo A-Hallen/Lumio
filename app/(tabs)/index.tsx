@@ -1,15 +1,16 @@
 import { useState } from 'react';
-import { Linking, Modal, Pressable, ScrollView, Text, View, useWindowDimensions } from 'react-native';
+import { Modal, Pressable, ScrollView, Text, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { dayView, formatDuration, hourLabel } from '../../src/core/schedule';
 import { useReady } from '../../src/data/store';
 import { Fan } from '../../src/ui/Fan';
 import { SectionTitle, SegmentList } from '../../src/ui/parts';
+import { UpdateNotice } from '../../src/ui/UpdateNotice';
 import { color, font } from '../../src/theme/tokens';
 
 export default function Hoy() {
-  const { now, schedules, circuit, circuits, setCircuit, status, sync, appUpdate } = useReady();
+  const { now, schedules, circuit, circuits, setCircuit, timeFormat, status, sync, appUpdate } = useReady();
   const { width } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const [picking, setPicking] = useState(false);
@@ -19,12 +20,11 @@ export default function Hoy() {
   const nowMinute = now.getHours() * 60 + now.getMinutes();
   const sameDay = status.until && status.until.toDateString() === now.toDateString();
   const nextChangeMinute = status.untilKnown && sameDay && status.until ? status.until.getHours() * 60 + status.until.getMinutes() : null;
-  const clock = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
   const word = !status.covered ? 'SIN DATOS' : status.hasLight ? 'HAY LUZ' : 'SIN LUZ';
   const wordColor = !status.covered ? color.smoke : status.hasLight ? color.glassOn : color.offText;
   const untilText = status.until
-    ? `${status.hasLight ? 'hasta' : 'vuelve a'} las ${hourLabel(status.until.getHours() * 60 + status.until.getMinutes())}${status.until.toDateString() === now.toDateString() ? '' : ' de mañana'}`
+    ? `${status.hasLight ? 'hasta' : 'vuelve a'} las ${hourLabel(status.until.getHours() * 60 + status.until.getMinutes(), timeFormat)}${status.until.toDateString() === now.toDateString() ? '' : ' de mañana'}`
     : null;
 
   return (
@@ -42,18 +42,14 @@ export default function Hoy() {
       </View>
 
       {appUpdate && (
-        <Pressable
-          onPress={() => Linking.openURL(appUpdate.apk)}
-          style={{ marginTop: 14, padding: 14, borderRadius: 8, backgroundColor: color.wall2, borderLeftWidth: 5, borderLeftColor: color.ruby, minHeight: 48 }}
-        >
-          <Text style={{ color: color.cal, fontWeight: '700' }}>Hay una versión nueva ({appUpdate.version})</Text>
-          <Text style={{ color: color.smoke, marginTop: 2 }}>Toca para descargar la actualización</Text>
-        </Pressable>
+        <View style={{ marginTop: 14 }}>
+          <UpdateNotice version={appUpdate.version} apk={appUpdate.apk} />
+        </View>
       )}
 
       {today && (
         <View style={{ marginTop: 14, marginHorizontal: -4 }}>
-          <Fan width={width - 32} lightPerSlot={today.slots} currentSlot={Math.floor(nowMinute / 180)} nowMinute={nowMinute} nextChangeMinute={nextChangeMinute} clock={clock} />
+          <Fan width={width - 32} lightPerSlot={today.slots} currentSlot={Math.floor(nowMinute / 180)} nowMinute={nowMinute} nextChangeMinute={nextChangeMinute} timeFormat={timeFormat} />
         </View>
       )}
 
@@ -83,13 +79,13 @@ export default function Hoy() {
       {today && (
         <>
           <SectionTitle>Hoy</SectionTitle>
-          <SegmentList segments={today.segments} />
+          <SegmentList segments={today.segments} timeFormat={timeFormat} />
         </>
       )}
       {tomorrow && (
         <>
           <SectionTitle>Mañana</SectionTitle>
-          <SegmentList segments={tomorrow.segments} />
+          <SegmentList segments={tomorrow.segments} timeFormat={timeFormat} />
         </>
       )}
 

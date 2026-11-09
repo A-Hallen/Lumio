@@ -1,11 +1,21 @@
 import { FlexWidget, SvgWidget, TextWidget } from 'react-native-android-widget';
 import { dayView, formatDuration, getStatus, hourLabel, type MonthSchedule } from '../core/schedule';
+import { compactRange, type TimeFormat } from '../core/time';
 import { color } from '../theme/tokens';
 import { fanSvg } from './fanSvg';
 
-const hhmm = (d: Date) => hourLabel(d.getHours() * 60 + d.getMinutes());
-
-export function LumioWidget({ schedules, circuit, now }: { schedules: MonthSchedule[]; circuit: number | null; now: Date }) {
+export function LumioWidget({
+  schedules,
+  circuit,
+  timeFormat,
+  now,
+}: {
+  schedules: MonthSchedule[];
+  circuit: number | null;
+  timeFormat: TimeFormat;
+  now: Date;
+}) {
+  const hhmm = (d: Date) => hourLabel(d.getHours() * 60 + d.getMinutes(), timeFormat);
   if (circuit === null) {
     return (
       <FlexWidget
@@ -29,6 +39,13 @@ export function LumioWidget({ schedules, circuit, now }: { schedules: MonthSched
       ? 'más allá no hay horario'
       : 'abre Lumio con internet';
 
+  // Mañana, solo si ese dia esta cargado: nunca se inventa.
+  const tomorrow = dayView(schedules, circuit, new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1));
+  const tomorrowLight = tomorrow?.segments.filter((s) => s.hasLight) ?? [];
+  const tomorrowLine = tomorrow
+    ? `Mañana: ${tomorrowLight.length ? tomorrowLight.map((s) => compactRange(s.startMin, s.endMin, timeFormat)).join(' · ') : 'sin luz'}`
+    : null;
+
   return (
     <FlexWidget
       clickAction="OPEN_APP"
@@ -40,6 +57,7 @@ export function LumioWidget({ schedules, circuit, now }: { schedules: MonthSched
       <FlexWidget style={{ flex: 1, marginLeft: 10, flexDirection: 'column', justifyContent: 'center' }}>
         <TextWidget text={word} style={{ fontFamily: 'sans-serif-condensed', fontWeight: '900', fontSize: 30, color: wordColor }} />
         <TextWidget text={line} maxLines={1} style={{ fontSize: 13, color: color.cal }} />
+        {tomorrowLine && <TextWidget text={tomorrowLine} maxLines={1} style={{ fontSize: 12, color: color.cal }} />}
         <TextWidget text={`Cto ${circuit} · act. ${hhmm(now)}`} style={{ fontSize: 11, color: color.smoke }} />
       </FlexWidget>
     </FlexWidget>

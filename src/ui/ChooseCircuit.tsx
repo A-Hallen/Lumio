@@ -22,7 +22,7 @@ export function ChooseCircuit() {
     >
       <Text style={{ fontFamily: font.display, fontSize: 28, letterSpacing: 3, color: color.cal }}>LUMIO</Text>
       <View style={{ alignItems: 'center', marginTop: 8 }}>
-        <Fan width={fanWidth} lightPerSlot={SAMPLE} currentSlot={-1} nowMinute={780} nextChangeMinute={null} clock="" />
+        <Fan width={fanWidth} lightPerSlot={SAMPLE} currentSlot={-1} nowMinute={780} nextChangeMinute={null} showClock={false} />
       </View>
 
       <Text style={{ fontFamily: font.display, fontSize: 44, lineHeight: 44, color: color.glassOn, marginTop: 12 }}>
