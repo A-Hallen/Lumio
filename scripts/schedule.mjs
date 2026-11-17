@@ -36,7 +36,7 @@ function writeMonth(month, rows, source) {
     updatedAt: new Date().toISOString(),
     source,
     slots: SLOTS,
-    circuits: [...new Set(rows.flat())].sort((a, b) => a - b),
+    circuits: [...new Set(rows.flat(2))].sort((a, b) => a - b),
     days,
   };
   validateSchedule(doc);
@@ -51,7 +51,8 @@ if (cmd === 'from-table') {
     .split('\n')
     .map((l) => l.replace(/Cto/gi, '').trim())
     .filter(Boolean)
-    .map((l) => l.split(/[\s,;]+/).map(Number));
+    // "20+21" = dos circuitos con luz en el mismo tramo
+    .map((l) => l.split(/[\s,;]+/).map((t) => (t.includes('+') ? t.split('+').map(Number) : Number(t))));
   if (rows.length !== daysIn(month)) die(`${month} tiene ${daysIn(month)} dias y el archivo trae ${rows.length} filas`);
   writeMonth(month, rows, 'tabla pegada a mano');
 } else if (cmd === 'rotate') {

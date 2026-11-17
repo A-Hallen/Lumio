@@ -20,7 +20,10 @@ export function validateSchedule(x: unknown): MonthSchedule {
   for (let d = 1; d <= daysInMonth(s.month); d++) {
     const row = s.days[String(d)];
     if (!Array.isArray(row) || row.length !== s.slots.length) return fail(`dia ${d}`);
-    if (!row.every((c) => s.circuits!.includes(c))) return fail(`circuito desconocido en el dia ${d}`);
+    const known = (c: number | number[]) => (Array.isArray(c) ? c.length > 0 && c.every((n) => s.circuits!.includes(n)) : s.circuits!.includes(c));
+    if (!row.every(known)) {
+      return fail(`circuito desconocido en el dia ${d}`);
+    }
   }
   return s as MonthSchedule;
 }

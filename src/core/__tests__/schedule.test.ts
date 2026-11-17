@@ -62,3 +62,29 @@ test('formato de duracion', () => {
   assert.equal(formatDuration(45 * 60_000), '45 min');
   assert.equal(formatDuration(20_000), 'menos de 1 min');
 });
+
+// Tabla vigente desde el 17 de noviembre (UNE Holguin): "CTO 20 y 21" comparten tramos.
+test('desde el 17 de noviembre: horas con luz de cada circuito segun la tabla', () => {
+  const hours = (c: number, d: number) =>
+    segmentsForDay(nov, c, d).filter((s) => s.hasLight).map((s) => [s.startMin / 60, Math.round(s.endMin / 60)]);
+  assert.deepEqual(hours(1, 17), [[9, 15]]);
+  assert.deepEqual(hours(1, 30), [[0, 3], [15, 18]]);
+  assert.deepEqual(hours(2, 19), [[9, 15]]);
+  assert.deepEqual(hours(2, 22), [[6, 12], [21, 24]]);
+  assert.deepEqual(hours(19, 28), [[12, 15]]);
+  assert.deepEqual(hours(19, 25), [[0, 3], [15, 18]]);
+  // 20 y 21 son un solo bloque: mismas horas
+  for (const d of [17, 18, 19, 20, 29, 30]) assert.deepEqual(hours(20, d), hours(21, d));
+  assert.deepEqual(hours(20, 17), [[6, 9], [21, 24]]);
+  assert.deepEqual(hours(20, 18), [[12, 15]]);
+});
+
+test('cada tramo del 17 al 30 tiene luz para algun circuito y el dia suma 24 h entre todos', () => {
+  for (let d = 17; d <= 30; d++) {
+    const total = [1, 2, 19, 20].reduce(
+      (n, c) => n + segmentsForDay(nov, c, d).filter((s) => s.hasLight).reduce((m, s) => m + s.endMin - s.startMin, 0),
+      0,
+    );
+    assert.equal(total, 24 * 60, `dia ${d}`);
+  }
+});

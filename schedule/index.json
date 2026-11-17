@@ -1,14 +1,14 @@
 {
- "generatedAt": "2026-11-09T03:43:31.689Z",
+ "generatedAt": "2026-11-17T13:41:11.385Z",
  "months": [
   {
    "month": "2026-11",
    "file": "2026-11.json",
-   "updatedAt": "2026-11-09T00:00:00Z"
+   "updatedAt": "2026-11-17T13:41:01.680Z"
   }
  ],
  "app": {
   "latest": "0.1.5",
-  "apk": "https://github.com/A-Hallen/Lumio/releases/latest/download/lumio.apk"
+  "apk": ""
  }
 }

@@ -7,8 +7,11 @@ export type MonthSchedule = {
   updatedAt?: string;
   slots: string[];
   circuits: number[];
-  days: Record<string, number[]>; // dia del mes -> circuito por tramo
+  /** Dia del mes -> circuito por tramo; si varios circuitos comparten tramo (p. ej. 20 y 21), una lista. */
+  days: Record<string, SlotCircuit[]>;
 };
+
+export type SlotCircuit = number | number[];
 
 export type Segment = { startMin: number; endMin: number; hasLight: boolean };
 
@@ -30,7 +33,7 @@ const monthKey = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).pad
 function lightPerSlot(s: MonthSchedule, circuit: number, day: number): boolean[] | null {
   const row = s.days[String(day)];
   if (!row) return null;
-  return row.map((c) => (c === circuit) === (s.meaning === 'light'));
+  return row.map((c) => (Array.isArray(c) ? c.includes(circuit) : c === circuit) === (s.meaning === 'light'));
 }
 
 /** Tramos del dia con luz / sin luz, ya unidos si son contiguos. */

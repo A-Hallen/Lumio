@@ -46,3 +46,5 @@ Secretos del repositorio: `LUMIO_KEYSTORE_B64`, `LUMIO_KEYSTORE_PASSWORD`, `LUMI
 ## Cómo se lee la tabla
 
 Cada fila es un día y cada columna un tramo de 3 horas. El circuito que aparece en la celda **tiene luz** en ese tramo.
+
+Si varios circuitos comparten tramo (desde el 17 de noviembre, "CTO 20 y 21"), la celda es una lista: `[20, 21]`. Con `from-table` se escribe `20+21`. Las apps anteriores a la 0.1.6 no entienden esas celdas y rechazan el mes, así que hay que sacar versión nueva.
