@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { validateSchedule } from '../validate.ts';
 import { isNewer } from '../version.ts';
-import { syncAll, mergeSchedules, type KV } from '../sync.ts';
+import { syncAll, mergeSchedules, loadStoredAppUpdate, type KV } from '../sync.ts';
 import type { MonthSchedule } from '../schedule.ts';
 
 const nov = JSON.parse(readFileSync(new URL('../../../schedule/2026-11.json', import.meta.url), 'utf8')) as MonthSchedule;
@@ -91,4 +91,25 @@ test('syncAll descarta un mes mal formado y no lo guarda', async () => {
   const r = await syncAll({ kv, fetchImpl: fetchImpl as never, mirrors: ['https://m'], now: 0, force: true, bundledUpdatedAt: {}, appVersion: '0.1.0' });
   assert.deepEqual(r.downloaded, []);
   assert.equal(kv.data.has('lumio.schedule.2026-12'), false);
+});
+
+test('una actualizacion obligatoria se recuerda y se sigue exigiendo sin internet', async () => {
+  const kv = memory();
+  const index = { months: [], app: { latest: '0.2.0', minVersion: '0.2.0', apk: 'https://x/lumio.apk' } };
+  const r = await syncAll({ kv, fetchImpl: (async () => reply(index)) as never, mirrors: ['https://m'], now: 0, force: true, bundledUpdatedAt: {}, appVersion: '0.1.9' });
+  assert.equal(r.appUpdate?.required, true);
+  // otro dia, sin red: lo guardado basta
+  const offline = await loadStoredAppUpdate(kv, '0.1.9');
+  assert.equal(offline?.required, true);
+  assert.equal(offline?.version, '0.2.0');
+  // ya con la version nueva instalada, desaparece
+  assert.equal(await loadStoredAppUpdate(kv, '0.2.0'), null);
+});
+
+test('si el indice quita el minimo, la exigencia se levanta', async () => {
+  const kv = memory();
+  const serve = (app: object) => (async () => reply({ months: [], app })) as never;
+  await syncAll({ kv, fetchImpl: serve({ latest: '0.2.0', minVersion: '0.2.0', apk: 'a' }), mirrors: ['https://m'], now: 0, force: true, bundledUpdatedAt: {}, appVersion: '0.1.9' });
+  await syncAll({ kv, fetchImpl: serve({ latest: '0.2.0', apk: 'a' }), mirrors: ['https://m'], now: 1, force: true, bundledUpdatedAt: {}, appVersion: '0.1.9' });
+  assert.equal((await loadStoredAppUpdate(kv, '0.1.9'))?.required, false);
 });

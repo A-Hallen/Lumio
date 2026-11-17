@@ -1,13 +1,13 @@
 import type { MonthSchedule } from './schedule.ts';
 import { validateSchedule } from './validate.ts';
-import { isNewer } from './version.ts';
+import { parseAppInfo, updateFor, type AppUpdate } from './appUpdate.ts';
 
 export interface KV {
   get(key: string): Promise<string | null>;
   set(key: string, value: string): Promise<void>;
 }
 
-export type AppUpdate = { version: string; apk: string; notes?: string };
+export type { AppUpdate };
 
 export type SyncOptions = {
   kv: KV;
@@ -19,6 +19,8 @@ export type SyncOptions = {
   /** updatedAt de los meses que ya vienen dentro de la app. */
   bundledUpdatedAt: Record<string, string>;
   appVersion: string;
+  /** Enlace de descarga si el indice no trae uno. */
+  fallbackApk?: string;
   minIntervalMs?: number;
   timeoutMs?: number;
 };
@@ -106,8 +108,22 @@ export async function syncAll(o: SyncOptions): Promise<SyncResult> {
   }
   await o.kv.set('lumio.months', JSON.stringify(months));
 
-  const app = index.app;
-  if (app && typeof app.latest === 'string' && typeof app.apk === 'string' && isNewer(app.latest, o.appVersion))
-    result.appUpdate = { version: app.latest, apk: app.apk, notes: typeof app.notes === 'string' ? app.notes : undefined };
+  const info = parseAppInfo(index.app);
+  if (info) await o.kv.set(APP_INFO_KEY, JSON.stringify(info));
+  result.appUpdate = updateFor(info, o.appVersion, o.fallbackApk);
   return result;
+}
+
+const APP_INFO_KEY = 'lumio.appinfo';
+
+/**
+ * Lo ultimo que se supo de las versiones, guardado en el telefono: asi una actualizacion obligatoria
+ * se sigue exigiendo aunque la persona abra la app sin internet.
+ */
+export async function loadStoredAppUpdate(kv: KV, appVersion: string, fallbackApk = ''): Promise<AppUpdate | null> {
+  try {
+    return updateFor(parseAppInfo(JSON.parse((await kv.get(APP_INFO_KEY)) ?? 'null')), appVersion, fallbackApk);
+  } catch {
+    return null;
+  }
 }

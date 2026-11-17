@@ -4,11 +4,17 @@ import * as Application from 'expo-application';
 import * as Device from 'expo-device';
 import { apkForArchitectures } from '../core/apk';
 import { getStatus, type MonthSchedule, type Status } from '../core/schedule';
-import { syncAll, type AppUpdate } from '../core/sync';
-import { MIRRORS } from '../config';
+import { loadStoredAppUpdate, syncAll, type AppUpdate } from '../core/sync';
+import { APK_FALLBACK, MIRRORS } from '../config';
 import { DEFAULT_TIME_FORMAT, type TimeFormat } from '../core/time';
 import { bundledUpdatedAt, circuitsOf, kv, loadCircuit, loadSchedules, loadTimeFormat, saveCircuit, saveTimeFormat } from './load';
 import { bundled } from './bundled';
+
+const APP_VERSION = Application.nativeApplicationVersion ?? '0.0.0';
+
+/** Elige el APK que le toca a este telefono (64 o 32 bits). */
+const forThisPhone = (u: AppUpdate | null): AppUpdate | null =>
+  u && { ...u, apk: apkForArchitectures(u.apk, Device.supportedCpuArchitectures) };
 
 const NO_STATUS: Status = { covered: false, hasLight: false, until: null, remainingMs: null, untilKnown: false };
 
@@ -54,10 +60,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         now: Date.now(),
         force,
         bundledUpdatedAt,
-        appVersion: Application.nativeApplicationVersion ?? '0.0.0',
+        appVersion: APP_VERSION,
+        fallbackApk: APK_FALLBACK,
       });
       if (r.downloaded.length) setSchedules(await loadSchedules());
-      if (r.appUpdate) setAppUpdate({ ...r.appUpdate, apk: apkForArchitectures(r.appUpdate.apk, Device.supportedCpuArchitectures) });
+      // Si el indice se leyo, manda lo que diga (incluso "ya no hay nada"); si no hubo internet se conserva lo ultimo sabido.
+      if (r.reachedMirror) setAppUpdate(forThisPhone(r.appUpdate));
       setSync(r.skipped || r.reachedMirror ? 'ok' : 'offline');
     } catch {
       setSync('offline');
@@ -72,6 +80,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setSchedules(all);
       setCircuitState(await loadCircuit(all));
       setTimeFormatState(await loadTimeFormat());
+      // Antes de mostrar nada: una actualizacion obligatoria ya conocida se exige tambien sin internet.
+      setAppUpdate(forThisPhone(await loadStoredAppUpdate(kv, APP_VERSION, APK_FALLBACK)));
       setReady(true);
       refresh(false);
     })();

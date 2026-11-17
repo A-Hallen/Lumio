@@ -2,14 +2,16 @@
 // Herramienta para mantener los horarios de Lumio.
 //
 //   node scripts/schedule.mjs from-table 2026-12 tabla.txt   # una fila por dia, 8 circuitos separados por espacios
+//   node scripts/schedule.mjs from-circuits 2026-12 tabla.txt [--merge]   # la tabla oficial copiada tal cual ("CTO 1", filas de dias y horas)
 //   node scripts/schedule.mjs rotate 2026-12                 # genera el mes continuando la rotacion 19,21,1,20,2
-//   node scripts/schedule.mjs build [--version 0.2.0 --apk URL --notes "texto"]
+//   node scripts/schedule.mjs build [--version 0.2.0 --apk URL --notes "texto" --min 0.2.0|none]
 //
 // `build` valida todos los meses, escribe schedule/index.json y regenera src/data/bundled.ts.
 import { readFileSync, writeFileSync, readdirSync, existsSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { validateSchedule } from '../src/core/validate.ts';
+import { parseCircuitTable, slotsToRanges } from '../src/core/ranges.ts';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const dir = resolve(root, 'schedule');
@@ -26,22 +28,31 @@ const die = (msg) => {
   process.exit(1);
 };
 
-function writeMonth(month, rows, source) {
-  const days = Object.fromEntries(rows.map((r, i) => [String(i + 1), r]));
+function saveMonth(month, circuits, days, source, version) {
   const doc = {
-    version: 1,
+    version,
     month,
     timezone: 'America/Havana',
     meaning: 'light',
     updatedAt: new Date().toISOString(),
     source,
     slots: SLOTS,
-    circuits: [...new Set(rows.flat(2))].sort((a, b) => a - b),
+    circuits,
     days,
   };
-  validateSchedule(doc);
+  try {
+    validateSchedule(doc);
+  } catch (e) {
+    die(e.message);
+  }
   writeFileSync(resolve(dir, `${month}.json`), JSON.stringify(doc, null, 1) + '\n');
-  console.log(`escrito schedule/${month}.json (${rows.length} dias)`);
+  console.log(`escrito schedule/${month}.json (${Object.keys(days).length} dias)`);
+}
+
+// Formato por tramo (el de las apps 0.1.x): una fila por dia con el circuito de cada tramo.
+function writeMonth(month, rows, source) {
+  const days = Object.fromEntries(rows.map((r, i) => [String(i + 1), r]));
+  saveMonth(month, [...new Set(rows.flat(2))].sort((a, b) => a - b), days, source, 1);
 }
 
 if (cmd === 'from-table') {
@@ -55,6 +66,32 @@ if (cmd === 'from-table') {
     .map((l) => l.split(/[\s,;]+/).map((t) => (t.includes('+') ? t.split('+').map(Number) : Number(t))));
   if (rows.length !== daysIn(month)) die(`${month} tiene ${daysIn(month)} dias y el archivo trae ${rows.length} filas`);
   writeMonth(month, rows, 'tabla pegada a mano');
+} else if (cmd === 'from-circuits') {
+  // La tabla oficial copiada tal cual (ver parseCircuitTable). Con --merge conserva los dias que la tabla no trae.
+  const [month, file] = args;
+  if (!/^\d{4}-\d{2}$/.test(month ?? '') || !file) die('uso: from-circuits AAAA-MM archivo.txt [--merge]');
+  let table;
+  try {
+    table = parseCircuitTable(readFileSync(file, 'utf8'));
+  } catch (e) {
+    die(e.message);
+  }
+  let { circuits, days } = table;
+  if (args.includes('--merge')) {
+    const path = resolve(dir, `${month}.json`);
+    if (!existsSync(path)) die(`--merge necesita schedule/${month}.json`);
+    const prev = validateSchedule(JSON.parse(readFileSync(path, 'utf8')));
+    if (prev.meaning !== 'light') die('--merge solo funciona con horarios de tipo "light"');
+    circuits = [...new Set([...prev.circuits, ...circuits])].sort((a, b) => a - b);
+    for (let d = 1; d <= daysIn(month); d++) {
+      if (days[String(d)]) continue;
+      const row = prev.days[String(d)];
+      days[String(d)] = Object.fromEntries(
+        circuits.map((c) => [String(c), slotsToRanges(row.map((cell) => (Array.isArray(cell) ? cell.includes(c) : cell === c)))]),
+      );
+    }
+  }
+  saveMonth(month, circuits, days, `tabla de circuitos de la empresa (${args.includes('--merge') ? 'combinada con el horario anterior' : 'completa'})`, 2);
 } else if (cmd === 'rotate') {
   const [month] = args;
   if (!/^\d{4}-\d{2}$/.test(month ?? '')) die('uso: rotate AAAA-MM');
@@ -67,7 +104,16 @@ if (cmd === 'from-table') {
     return { month: s.month, file: f, updatedAt: s.updatedAt ?? '' };
   });
   const version = flag('version') ?? JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf8')).version;
-  const app = { latest: version, apk: flag('apk') ?? '', ...(flag('notes') ? { notes: flag('notes') } : {}) };
+  // La version minima obligatoria sobrevive a los lanzamientos: solo cambia con --min X (o --min none para quitarla).
+  const previous = existsSync(resolve(dir, 'index.json')) ? JSON.parse(readFileSync(resolve(dir, 'index.json'), 'utf8')) : {};
+  const minVersion = flag('min') === 'none' ? undefined : (flag('min') ?? previous.app?.minVersion);
+  if (minVersion !== undefined && !/^\d+\.\d+\.\d+$/.test(minVersion)) die(`--min debe ser una version como 0.2.0, no "${minVersion}"`);
+  const app = {
+    latest: version,
+    apk: flag('apk') ?? '',
+    ...(minVersion ? { minVersion } : {}),
+    ...(flag('notes') ? { notes: flag('notes') } : {}),
+  };
   writeFileSync(resolve(dir, 'index.json'), JSON.stringify({ generatedAt: new Date().toISOString(), months, app }, null, 1) + '\n');
   const imports = months.map((m, i) => `import m${i} from '../../schedule/${m.file}';`).join('\n');
   writeFileSync(

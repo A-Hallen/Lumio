@@ -6,12 +6,14 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { BarlowCondensed_600SemiBold, BarlowCondensed_800ExtraBold, useFonts } from '@expo-google-fonts/barlow-condensed';
 import { StoreProvider, useStore } from '../src/data/store';
 import { ChooseCircuit } from '../src/ui/ChooseCircuit';
+import { RequiredUpdate } from '../src/ui/RequiredUpdate';
 import { color } from '../src/theme/tokens';
 
 /** Hasta que la persona elige su circuito no hay pestañas: solo la pantalla de bienvenida. */
 function CircuitGate({ children }: { children: ReactNode }) {
-  const { ready, circuit } = useStore();
+  const { ready, circuit, appUpdate } = useStore();
   if (!ready) return null;
+  if (appUpdate?.required) return <RequiredUpdate />;
   if (circuit === null) return <ChooseCircuit />;
   return <>{children}</>;
 }
